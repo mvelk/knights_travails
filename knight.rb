@@ -1,5 +1,6 @@
 require_relative 'treenode'
 require 'set'
+require 'byebug'
 
 class KnightPathFinder
 
@@ -12,7 +13,7 @@ class KnightPathFinder
     OFFSETS.each do |offset|
       d_x, d_y = offset
       new_pos = [row + d_x, col + d_y]
-      valid_moves << new_pos if new_pos.all? { |num| num.between?(0,8) }
+      valid_moves << new_pos if new_pos.all? { |num| num.between?(0,7) }
     end
     return valid_moves
   end
@@ -27,8 +28,8 @@ class KnightPathFinder
     @visited_pos = Set.new
     @root = PolyTreeNode.new(pos)
     @visited_pos.add(pos)
-    @tree = Set.new
     build_move_tree
+    find_path([7,7])
   end
 
   def build_move_tree
@@ -41,17 +42,30 @@ class KnightPathFinder
       children_pos.each do |child_pos|
         child_node = PolyTreeNode.new(child_pos)
         child_node.parent = current_node
-        @tree << child_node
         @visited_pos << child_pos
-        @queue += child_node
+        queue << child_node
       end
     end
+    @tree
   end
 
-  def find_path
+  def find_path(target_pos)
     #use DFS or BFS to find path to target leaf
+    trace_back_path(@root.dfs(target_pos))
   end
-  def trace_back_path
+  def trace_back_path(node)
     #trace back pointers to beginning and reverse list
+    path = [node]
+    until path.last == @root
+      path << node.parent
+      node = node.parent
+    end
+    path.reverse!
+    p (path.map { |node| "#{node.value}" }).join('->')
   end
+end
+
+
+if __FILE__ == $0
+  k = KnightPathFinder.new([0,0])
 end
